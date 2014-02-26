@@ -18,7 +18,7 @@ void dsh_init(struct dsh_shell *shell,
 
 int dsh_run(struct dsh_shell *shell)
 {
-	char line[1024];
+	char line[256];
 	int res;
 
 	for(;;) {
@@ -28,6 +28,7 @@ int dsh_run(struct dsh_shell *shell)
 		res = dsh_get_line(shell->reader, line, sizeof(line));
 		if (res < 0) {
 			dsh_write_str(shell->writer, "ERR: input line too long\r\n");
+			continue;
 		}
 
 		dsh_printf(shell->writer, "You said %s\r\n", line);
@@ -73,24 +74,21 @@ static int dsh_printf(dsh_char_writer writer, const char *format_string, ...)
 {
 	va_list varargs;
 	char *string = NULL;
-	int res = 0;
+	int size;
 
 	va_start(varargs, format_string);
-	res = vasprintf(&string, format_string, varargs);
+	size = vsnprintf(string, 0, format_string, varargs);
+	string = malloc(size + 1);
+	if (!string) {
+		return -1;
+	}
+	vsnprintf(string, size + 1, format_string, varargs);
 	va_end(varargs);
 
-	if (res < 0) {
-		goto free_string;
-	}
-
 	dsh_write_str(writer, string);
+	free(string);
 
-free_string:
-	if (string) {
-		free(string);
-	}
-
-	return res;
+	return 0;
 }
 
 static void dsh_write_str(dsh_char_writer writer, const char *string)
