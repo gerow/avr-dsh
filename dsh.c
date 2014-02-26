@@ -4,9 +4,12 @@
 #include <string.h>
 
 #include <dsh/dsh.h>
-#if 1
+
+#ifdef DSH_LOCAL
 #include <dsh/dummy.h>
-#endif /* 1 */
+#else
+#include <avr/io.h>
+#endif /* DSH_LOCAL */
 
 static void dsh_ddr(dsh_char_writer writer);
 static void dsh_ddr_letter(dsh_char_writer writer, volatile uint8_t ddr, char letter);

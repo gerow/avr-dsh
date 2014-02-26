@@ -1,8 +1,11 @@
+DEVICE        = atmega328p
+
 AVR_CC        = avr-gcc
 AVR_CFLAGS    = -Os
+AVR_CFLAGS   += -mmcu=$(DEVICE)
 
 LOCAL_CC      = $(CC)
-LOCAL_CFLAGS  = -g
+LOCAL_CFLAGS  = -g -DDSH_LOCAL
 
 CFLAGS        = -Iinclude -Wall
 
