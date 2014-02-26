@@ -1,0 +1,7 @@
+dsh is a tiny shell for debugging atmel microcontrollers, mainly the
+avr atmega328p.
+
+You can compile a local test that uses dummy values with 'make local_test'. Otherwise
+you can compile the shell's object file by simply running 'make'.
+
+Make sure you have avr-gcc and avr-libc installed.

@@ -1,2 +1,3 @@
 *.o
+*.o.local
 local_test
