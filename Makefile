@@ -1,6 +1,7 @@
-CC = cc
-CFLAGS = -g
-MAKE = make
+CC      = cc
+CFLAGS  = -g
+CFLAGS += -Iinclude
+MAKE    = make
 
 all: local_test
 
@@ -12,5 +13,5 @@ dsh.o: dsh.c include/dsh/dsh.h
 	$(CC) $(CFLAGS) -c dsh.c
 
 clean:
-	-rm -rf *.o
-	-rm -rf local_test
+	-rm -f *.o
+	-rm -f local_test
