@@ -1,8 +1,12 @@
-#include <dsh/dsh.h>
-
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+#include <string.h>
+
+#include <dsh/dsh.h>
+#if 1
+#include <dsh/dummy.h>
+#endif /* 1 */
 
 static int dsh_get_line(dsh_char_reader reader, char *line, size_t size);
 static int dsh_printf(dsh_char_writer writer, const char *format_string, ...);
@@ -27,11 +31,17 @@ int dsh_run(struct dsh_shell *shell)
 		/* get a line */
 		res = dsh_get_line(shell->reader, line, sizeof(line));
 		if (res < 0) {
-			dsh_write_str(shell->writer, "ERR: input line too long\r\n");
+			dsh_write_str(shell->writer, "dsh: input line too long\r\n");
 			continue;
 		}
 
-		dsh_printf(shell->writer, "You said %s\r\n", line);
+		if (strncmp(line, "echo", 4) == 0) {
+			char *arg = line + 4;
+			dsh_printf(shell->writer, "%s\r\n", "woaaaaaah");
+			continue;
+		} 
+
+		dsh_printf(shell->writer, "dsh: %s: command not found\r\n", line);
 	}
 }
 
