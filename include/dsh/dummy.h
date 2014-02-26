@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-volatile uint8_t DDRA;
 volatile uint8_t DDRB;
 volatile uint8_t DDRC;
+volatile uint8_t DDRD;
 
 volatile uint8_t PORTB;
 volatile uint8_t PORTC;

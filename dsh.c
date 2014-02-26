@@ -8,6 +8,8 @@
 #include <dsh/dummy.h>
 #endif /* 1 */
 
+static void dsh_ddr(dsh_char_writer writer);
+static void dsh_ddr_letter(dsh_char_writer writer, volatile uint8_t ddr, char letter);
 static int dsh_get_line(dsh_char_reader reader, char *line, size_t size);
 static int dsh_printf(dsh_char_writer writer, const char *format_string, ...);
 static void dsh_write_str(dsh_char_writer writer, const char *string);
@@ -35,17 +37,73 @@ int dsh_run(struct dsh_shell *shell)
 			continue;
 		}
 
-		if (strncmp(line, "echo", 4) == 0) {
-			char *arg = line + 4;
-			dsh_printf(shell->writer, "%s\r\n", "woaaaaaah");
+		char *command;
+		char *args;
+
+		/* the entire line is the command (for now) */
+		command = line;
+		/* find the location of the first space. args will be null if there is none */
+		args = strchr(line, ' ');
+
+		if (args) {
+			*args = '\0';
+			args++;
+
+			/* skip any additional spaces */
+			while (*args == ' ' && *args != '\0') {
+				args++;
+			}
+
+			if (*args == '\0') {
+				/* 
+				 * if this is the case then there are no additional args,
+				 * so set args to NULL
+				 */
+				args = NULL;
+			}
+		}
+
+		if (strcmp(command, "echo") == 0) {
+			if (args) {
+				dsh_printf(shell->writer, "%s\r\n", args);
+			}
 			continue;
 		} 
 
-		dsh_printf(shell->writer, "dsh: %s: command not found\r\n", line);
+		if (strcmp(command, "ddr") == 0) {
+			dsh_ddr(shell->writer);
+			continue;
+		}
+
+		dsh_printf(shell->writer, "dsh: %s: command not found\r\n", command);
 	}
 }
 
 /* Static functions */
+
+static void dsh_ddr(dsh_char_writer writer)
+{
+	/* print the header */
+	dsh_printf(writer, "DDR 7 6 5 4 3 2 1 0\r\n");
+	dsh_ddr_letter(writer, DDRB, 'B');
+	dsh_ddr_letter(writer, DDRC, 'C');
+	dsh_ddr_letter(writer, DDRD, 'D');
+}
+
+static void dsh_ddr_letter(dsh_char_writer writer, volatile uint8_t ddr, char letter)
+{
+	int i;
+
+	dsh_printf(writer, "  %c", letter);
+	for (i = 0x80; i != 0; i >>= 1) {
+		if (ddr & i) {
+			dsh_printf(writer, " O");
+		} else {
+			dsh_printf(writer, " I");
+		}
+	}
+	dsh_printf(writer, "\r\n");
+}
 
 /*
  * Read a from reader until we see a new line and then save the
@@ -88,10 +146,14 @@ static int dsh_printf(dsh_char_writer writer, const char *format_string, ...)
 
 	va_start(varargs, format_string);
 	size = vsnprintf(string, 0, format_string, varargs);
+	va_end(varargs);
+	
 	string = malloc(size + 1);
 	if (!string) {
 		return -1;
 	}
+
+	va_start(varargs, format_string);
 	vsnprintf(string, size + 1, format_string, varargs);
 	va_end(varargs);
 
