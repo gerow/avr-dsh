@@ -87,6 +87,18 @@ int dsh_run(struct dsh_shell *shell)
 			continue;
 		}
 
+		/*
+		 * return to whoever called us with the status given
+		 */
+		if (strcmp(command, "exit") == 0) {
+			int retval = 0;
+			if (args) {
+				retval = atoi(args);
+			}
+
+			return retval;
+		}
+
 		dsh_printf(shell->writer, "dsh: %s: command not found\r\n", command);
 	}
 }

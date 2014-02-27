@@ -14,7 +14,9 @@ int main(int argc, char **argv)
 	DDRC = 0xFF;
 
 	dsh_init(&shell, reader, writer);
-	dsh_run(&shell);
+	int ret = dsh_run(&shell);
+
+	printf("local_test: shell exited with return value %d\n", ret);
 
 	return 0;
 }
