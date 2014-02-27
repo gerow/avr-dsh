@@ -11,6 +11,7 @@ int main(int argc, char **argv)
 	struct dsh_shell shell;
 
 	DDRB = 0x80;
+	DDRC = 0xFF;
 
 	dsh_init(&shell, reader, writer);
 	dsh_run(&shell);

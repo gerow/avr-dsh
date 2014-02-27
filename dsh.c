@@ -200,7 +200,15 @@ static void dsh_r(dsh_char_writer writer, const char *arg)
 	
 	for (i = 0; i < num_rw_entries; i++) {
 		if (!strcmp(rw_entries[i].name, arg)) {
-			dsh_printf(writer, "%s: %d\r\n", rw_entries[i].name, *rw_entries[i].ptr);
+			int val = *rw_entries[i].ptr;
+			int signed_val = (int8_t)(val);
+			dsh_printf(writer,
+			    "unsigned: %u\r\n"
+			    "signed:   %d\r\n"
+			    "hex:      0x%x\r\n",
+			    val,
+			    signed_val,
+			    val);
 			return;
 		}
 	}
