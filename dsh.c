@@ -11,10 +11,8 @@
 #include <avr/io.h>
 #endif /* DSH_LOCAL */
 
-struct rw_entry {
-	const char *name;
-	volatile uint8_t *ptr;
-};
+#include <dsh/rw_entries.h>
+
 
 static void dsh_ddr(dsh_char_writer writer);
 static void dsh_ddr_letter(dsh_char_writer writer, volatile uint8_t ddr, char letter);
@@ -177,38 +175,21 @@ static int dsh_printf(dsh_char_writer writer, const char *format_string, ...)
 	return 0;
 }
 
-static const struct rw_entry rw_entries[] = {
-	{.name = "DDRB",
-	 .ptr  = &DDRB},
-	{.name = "DDRC",
-	 .ptr  = &DDRC},
-	{.name = "DDRD",
-	 .ptr  = &DDRD},
-	{.name = "PORTB",
-	 .ptr  = &PORTB},
-	{.name = "PORTC",
-	 .ptr  = &PORTC},
-	{.name = "PORTD",
-	 .ptr  = &PORTD},
-};
-
-size_t num_rw_entries = sizeof(rw_entries) / sizeof(struct rw_entry);
-
 static void dsh_r(dsh_char_writer writer, const char *arg)
 {
 	int i;
-	
+
 	for (i = 0; i < num_rw_entries; i++) {
 		if (!strcmp(rw_entries[i].name, arg)) {
 			int val = *rw_entries[i].ptr;
 			int signed_val = (int8_t)(val);
 			dsh_printf(writer,
-			    "unsigned: %u\r\n"
-			    "signed:   %d\r\n"
-			    "hex:      0x%x\r\n",
-			    val,
-			    signed_val,
-			    val);
+					"unsigned: %u\r\n"
+					"signed:   %d\r\n"
+					"hex:      0x%x\r\n",
+					val,
+					signed_val,
+					val);
 			return;
 		}
 	}
