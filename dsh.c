@@ -11,10 +11,16 @@
 #include <avr/io.h>
 #endif /* DSH_LOCAL */
 
+struct rw_entry {
+	const char *name;
+	volatile uint8_t *ptr;
+};
+
 static void dsh_ddr(dsh_char_writer writer);
 static void dsh_ddr_letter(dsh_char_writer writer, volatile uint8_t ddr, char letter);
 static int dsh_get_line(dsh_char_reader reader, char *line, size_t size);
 static int dsh_printf(dsh_char_writer writer, const char *format_string, ...);
+static void dsh_r(dsh_char_writer writer, const char *arg);
 static void dsh_write_str(dsh_char_writer writer, const char *string);
 
 void dsh_init(struct dsh_shell *shell,
@@ -75,6 +81,11 @@ int dsh_run(struct dsh_shell *shell)
 
 		if (strcmp(command, "ddr") == 0) {
 			dsh_ddr(shell->writer);
+			continue;
+		}
+
+		if (strcmp(command, "r") == 0) {
+			dsh_r(shell->writer, args);
 			continue;
 		}
 
@@ -164,6 +175,37 @@ static int dsh_printf(dsh_char_writer writer, const char *format_string, ...)
 	free(string);
 
 	return 0;
+}
+
+static const struct rw_entry rw_entries[] = {
+	{.name = "DDRB",
+	 .ptr  = &DDRB},
+	{.name = "DDRC",
+	 .ptr  = &DDRC},
+	{.name = "DDRD",
+	 .ptr  = &DDRD},
+	{.name = "PORTB",
+	 .ptr  = &PORTB},
+	{.name = "PORTC",
+	 .ptr  = &PORTC},
+	{.name = "PORTD",
+	 .ptr  = &PORTD},
+};
+
+size_t num_rw_entries = sizeof(rw_entries) / sizeof(struct rw_entry);
+
+static void dsh_r(dsh_char_writer writer, const char *arg)
+{
+	int i;
+	
+	for (i = 0; i < num_rw_entries; i++) {
+		if (!strcmp(rw_entries[i].name, arg)) {
+			dsh_printf(writer, "%s: %d\r\n", rw_entries[i].name, *rw_entries[i].ptr);
+			return;
+		}
+	}
+
+	dsh_printf(writer, "no variable named '%s'\r\n", arg);
 }
 
 static void dsh_write_str(dsh_char_writer writer, const char *string)
